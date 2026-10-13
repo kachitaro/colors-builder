@@ -1,7 +1,12 @@
 import { mkdirSync, writeFileSync } from "node:fs";
 import { differenceEuclidean } from "culori";
-import { AA, HUES, NEUTRALS, NON_TEXT } from "./config.ts";
+import { AA, HUES, NEUTRALS, NON_TEXT, type Hue } from "./config.ts";
+import { brandHue, HARMONY, harmonyHues, type Harmony } from "./harmony.ts";
 import { contrast, fmt, hueScale, neutralScale, type Mode, type Scale } from "./scale.ts";
+
+// độ phân biệt giữa các màu chart (ΔE OKLab)
+const dE = differenceEuclidean("oklab");
+const CHART_MIN_DE = 0.08;
 
 // ─── tuỳ chọn theme (CLI: --neutral slate --primary blue ...) ─────────────
 const arg = (k: string, d: string) => {
@@ -18,7 +23,20 @@ const OPT = {
   info: arg("info", "blue"),
   chart: arg("chart", "blue,orange,teal,violet,pink,grass,red,brown").split(","),
   out: arg("out", "dist"),
+  harmony: arg("harmony", ""),
 };
+
+// --primary "#rrggbb" sinh thang "brand" từ mã màu bất kì.
+// --harmony complementary|split|analogous|triadic sinh thêm thang brand-2, brand-3 làm màu phụ.
+const extra: Hue[] = [];
+const base = /^#?[0-9a-f]{6}$/i.test(OPT.primary) ? brandHue(OPT.primary) : HUES.find((h) => h.name === OPT.primary);
+if (base?.name === "brand") (extra.push(base), (OPT.primary = "brand"));
+if (OPT.harmony) {
+  if (!(OPT.harmony in HARMONY)) throw new Error(`--harmony phải là một trong: ${Object.keys(HARMONY).join(", ")}`);
+  if (!base) throw new Error("--harmony cần --primary là mã hex hoặc tên một hue (không dùng được với neutral)");
+  extra.push(...harmonyHues(base, OPT.harmony as Harmony));
+}
+const SECONDARY = extra.filter((h) => h.name !== "brand").map((h) => h.name);
 
 // ─── sinh toàn bộ thang ───────────────────────────────────────────────────
 const MODES: Mode[] = ["light", "dark"];
@@ -29,7 +47,7 @@ for (const mode of MODES) {
   const gray = neutralScale(NEUTRALS[0], mode, "#ffffff");
   const alphaBg = mode === "light" ? "#ffffff" : gray.steps[0].hex;
   for (const n of NEUTRALS) scales[mode].push(neutralScale(n, mode, alphaBg));
-  for (const h of HUES) scales[mode].push(hueScale(h, mode, alphaBg));
+  for (const h of [...HUES, ...extra]) scales[mode].push(hueScale(h, mode, alphaBg));
 }
 const find = (mode: Mode, name: string) => {
   const s = scales[mode].find((x) => x.name === name);
@@ -40,6 +58,43 @@ const find = (mode: Mode, name: string) => {
 // ─── tầng ngữ nghĩa (shadcn) ──────────────────────────────────────────────
 // Giá trị là tham chiếu "<thang>-<bậc>" hoặc "<thang>-contrast".
 type Map = Record<string, string>;
+// Chữ trên nền primary: lấy phương án đầu tiên đạt AA (contrast → bậc 1 → bậc 12), nếu không có thì lấy tốt nhất.
+// Ý tưởng "giải tới AA" mượn từ devglow; ở đây chỉ chọn trong 3 ứng viên, không dịch lightness.
+function primaryForeground(mode: Mode, name: string, step: string): string {
+  const s = find(mode, name);
+  const bg = s.steps[+step - 1].hex;
+  const cands = [[`${name}-contrast`, s.contrast], [`${name}-1`, s.steps[0].hex], [`${name}-12`, s.steps[11].hex]] as const;
+  return (cands.find(([, hex]) => contrast(hex, bg) >= AA) ?? cands.reduce((a, b) => (contrast(b[1], bg) > contrast(a[1], bg) ? b : a)))[0];
+}
+
+// Tách các màu chart gần nhau (ΔE < CHART_MIN_DE): dời màu đứng sau sang bậc 8/10/7/11 của cùng thang
+// (vẫn là alias vào thang Radix, không sinh màu mới), chọn bậc xa nhất mà vẫn đạt NON_TEXT trên nền.
+// Mượn ý "mutual distinctness" của devglow; ở đây dời bậc rời rạc thay vì dời lightness liên tục.
+function spreadChart(mode: Mode, m: Map) {
+  const bg = find(mode, OPT.neutral).steps[0].hex;
+  const hex = (k: number) => resolve(mode, m[`chart-${k + 1}`]);
+  const minTo = (k: number, c: string) => Math.min(...OPT.chart.map((_, o) => (o === k ? Infinity : dE(c, hex(o)))));
+  for (let pass = 0; pass < 3; pass++) {
+    let moved = false;
+    for (let i = 0; i < OPT.chart.length; i++)
+      for (let j = i + 1; j < OPT.chart.length; j++) {
+        if (dE(hex(i), hex(j)) >= CHART_MIN_DE) continue;
+        const s = find(mode, OPT.chart[j]);
+        let best = { step: 9, d: minTo(j, hex(j)) };
+        for (const step of [8, 10, 7, 11]) {
+          const c = s.steps[step - 1].hex;
+          const d = minTo(j, c);
+          if (contrast(c, bg) >= NON_TEXT && d > best.d) best = { step, d };
+        }
+        if (best.step !== 9 || m[`chart-${j + 1}`] !== `${OPT.chart[j]}-9`) {
+          m[`chart-${j + 1}`] = `${OPT.chart[j]}-${best.step}`;
+          moved = true;
+        }
+      }
+    if (!moved) break;
+  }
+}
+
 function semantic(mode: Mode): Map {
   const N = OPT.neutral;
   const neutralPrimary = OPT.primary === "neutral";
@@ -53,7 +108,7 @@ function semantic(mode: Mode): Map {
     popover: dark ? `${N}-2` : `${N}-1`,
     "popover-foreground": `${N}-12`,
     primary: neutralPrimary ? `${N}-12` : `${P}-${OPT.primaryStep}`,
-    "primary-foreground": neutralPrimary ? `${N}-1` : `${P}-contrast`,
+    "primary-foreground": neutralPrimary ? `${N}-1` : primaryForeground(mode, P, OPT.primaryStep),
     secondary: `${N}-3`,
     "secondary-foreground": `${N}-12`,
     muted: `${N}-3`,
@@ -62,7 +117,8 @@ function semantic(mode: Mode): Map {
     "accent-foreground": `${N}-12`,
     border: `${N}-6`,
     input: `${N}-7`,
-    ring: `${P}-9`,
+    // bậc 9 của hue sáng (vàng, lime…) không đạt 3:1 trên nền trắng → lùi sang bậc 10/11
+    ring: `${P}-${[9, 10, 11].find((s) => contrast(find(mode, P).steps[s - 1].hex, find(mode, N).steps[0].hex) >= NON_TEXT) ?? 11}`,
   };
   // trạng thái: solid / subtle / border / text
   const status: [string, string][] = [
@@ -70,6 +126,7 @@ function semantic(mode: Mode): Map {
     ["success", OPT.success],
     ["warning", OPT.warning],
     ["info", OPT.info],
+    ...SECONDARY.map((n): [string, string] => [n, n]),
   ];
   for (const [k, s] of status) {
     m[k] = `${s}-9`;
@@ -79,6 +136,7 @@ function semantic(mode: Mode): Map {
     m[`${k}-text`] = `${s}-11`;
   }
   OPT.chart.forEach((c, i) => (m[`chart-${i + 1}`] = `${c}-9`));
+  spreadChart(mode, m);
   Object.assign(m, {
     sidebar: `${N}-2`,
     "sidebar-foreground": `${N}-12`,
@@ -128,20 +186,21 @@ for (const mode of MODES) {
     ["input", "background", NON_TEXT, "info"],
     ["border", "background", NON_TEXT, "info"],
   ];
-  for (const k of ["destructive", "success", "warning", "info"]) {
+  for (const k of ["destructive", "success", "warning", "info", ...SECONDARY]) {
     pairs.push([`${k}-foreground`, k, AA, "text"], [`${k}-text`, `${k}-subtle`, AA, "text"], [`${k}-text`, "background", AA, "text"]);
   }
   OPT.chart.forEach((_, i) => pairs.push([`chart-${i + 1}`, "background", NON_TEXT, "ui"]));
   for (const [fg, bg, need, kind] of pairs) check(mode, "theme", `${fg} / ${bg}`, resolve(mode, m[fg]), resolve(mode, m[bg]), need, kind);
 }
 
-// độ phân biệt giữa các màu chart (ΔE OKLab)
-const dE = differenceEuclidean("oklab");
+// ΔE giữa các màu chart sau khi đã tách
 const chartDist: { mode: Mode; a: string; b: string; d: number }[] = [];
-for (const mode of MODES)
+for (const mode of MODES) {
+  const m = semantic(mode);
   for (let i = 0; i < OPT.chart.length; i++)
     for (let j = i + 1; j < OPT.chart.length; j++)
-      chartDist.push({ mode, a: OPT.chart[i], b: OPT.chart[j], d: dE(find(mode, OPT.chart[i]).steps[8].hex, find(mode, OPT.chart[j]).steps[8].hex) });
+      chartDist.push({ mode, a: m[`chart-${i + 1}`], b: m[`chart-${j + 1}`], d: dE(resolve(mode, m[`chart-${i + 1}`]), resolve(mode, m[`chart-${j + 1}`])) });
+}
 
 // ─── xuất file ────────────────────────────────────────────────────────────
 mkdirSync(OPT.out, { recursive: true });

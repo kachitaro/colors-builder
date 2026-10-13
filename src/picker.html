@@ -1,5 +1,7 @@
 <!doctype html>
+<html lang="vi">
 <meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Spectrum colors</title>
 <style>
 body{font:14px system-ui;margin:0;padding:24px;background:var(--bg);color:var(--fg)}
@@ -44,6 +46,8 @@ code{padding:6px 10px;border:1px solid var(--bd);border-radius:6px}
   <button id="alpha">Alpha: off</button>
   <span>neutral: <b id="n">gray</b></span><span>primary: <b id="p">neutral</b></span>
   <label>bậc <select id="step"></select></label><span id="ratio"></span>
+  <label>mã màu <input type="color" id="hexc" value="#2563eb"> <input id="hex" placeholder="#2563eb" size="8" maxlength="7"></label>
+  <label>phối <select id="harm"></select></label>
   <code id="cmd"></code><button id="copycmd">Copy lệnh</button>
 </header>
 <section id="pv"><div class="grid">
@@ -55,6 +59,7 @@ code{padding:6px 10px;border:1px solid var(--bd);border-radius:6px}
 </div></section>
 <main id="main"></main>
 <div id="toast"></div>
+<script>/*BUNDLE*/</script>
 <script>
 const T=/*TOKENS*/null;
 let mode="light",alpha=false,neutral=T.options.neutral,primary=T.options.primary,step=9;
@@ -63,7 +68,7 @@ const copy=t=>{navigator.clipboard.writeText(t);const e=$("toast");e.textContent
 const lum=h=>{const[r,g,b]=[1,3,5].map(i=>parseInt(h.slice(i,i+2),16));return(r*299+g*587+b*114)/1000};
 function render(){
   document.body.className=mode;$("n").textContent=neutral;$("p").textContent=primary;
-  $("cmd").textContent=`bun run build -- --neutral ${neutral} --primary ${primary}`+(primary!="neutral"&&step!=9?` --primary-step ${step}`:"");
+  $("cmd").textContent=`bun run build -- --neutral ${neutral} --primary ${primary=="brand"?`"${hex}"`:primary}`+(primary!="neutral"&&step!=9?` --primary-step ${step}`:"")+(harmony&&primary!="neutral"?` --harmony ${harmony}`:"");
   $("main").innerHTML="";
   for(const[name,s]of Object.entries(T.scales[mode])){
     const row=document.createElement("div");row.className="row";
@@ -74,7 +79,8 @@ function render(){
       el.title=`--${name}-${i+1}${alpha?"-a":""}  ${c}`;el.onclick=()=>copy(c);row.querySelector(".steps").append(el)});
     const tag=row.querySelector(".tag"),b=document.createElement("button");
     if(s.kind=="neutral"){b.textContent="neutral";b.className=name==neutral?"on":"";b.onclick=()=>{neutral=name;render()}}
-    else{b.textContent="primary";b.className=name==primary?"on":"";b.onclick=()=>{primary=name;render()}}
+    else{b.textContent=name.startsWith("brand-")?"màu phụ":"primary";b.className=name==primary?"on":"";
+      if(!name.startsWith("brand-"))b.onclick=()=>{primary=name;hex="";$("hex").value="";applyCustom()}}
     tag.append(b);$("main").append(row);
   }
   preview();
@@ -84,14 +90,17 @@ function preview(){
   const o=T.options,N=neutral,P=primary=="neutral"?N:primary,np=primary=="neutral",dk=mode=="dark",S=T.scales[mode];
   const hx=r=>{const i=r.lastIndexOf("-"),n=r.slice(0,i),k=r.slice(i+1);return k=="contrast"?S[n].contrast:S[n].steps[k-1]};
   const v={background:N+"-1",foreground:N+"-12",card:dk?N+"-2":N+"-1","card-foreground":N+"-12",
-    primary:np?N+"-12":P+"-"+step,"primary-foreground":np?N+"-1":P+"-contrast",secondary:N+"-3","secondary-foreground":N+"-12",
-    muted:N+"-3","muted-foreground":N+"-11",accent:N+"-4","accent-foreground":N+"-12",border:N+"-6",input:N+"-7",ring:P+"-9",
+    primary:np?N+"-12":P+"-"+step,"primary-foreground":np?N+"-1":[P+"-contrast",P+"-1",P+"-12"].find(r=>ratio(hx(P+"-"+step),hx(r))>=4.5)||P+"-contrast",secondary:N+"-3","secondary-foreground":N+"-12",
+    muted:N+"-3","muted-foreground":N+"-11",accent:N+"-4","accent-foreground":N+"-12",border:N+"-6",input:N+"-7",ring:P+"-"+([9,10,11].find(s=>ratio(hx(P+"-"+s),hx(N+"-1"))>=3)||11),
     sidebar:N+"-2","sidebar-foreground":N+"-12","sidebar-accent":N+"-4","sidebar-accent-foreground":N+"-12","sidebar-border":N+"-6"};
   v["sidebar-primary"]=v.primary;v["sidebar-primary-foreground"]=v["primary-foreground"];
-  for(const[k]of ST){const s=o[k];v[k]=s+"-9";v[k+"-foreground"]=s+"-contrast";v[k+"-subtle"]=s+"-3";v[k+"-border"]=s+"-6";v[k+"-text"]=s+"-11"}
+  const sec=Object.keys(S).filter(k=>/^brand-\d$/.test(k));
+  const ST2=[...ST.map(([k,t])=>[k,o[k],t]),...sec.map((k,i)=>[k,k,"Phụ "+(i+2)])];
+  for(const[k,s]of ST2){v[k]=s+"-9";v[k+"-foreground"]=s+"-contrast";v[k+"-subtle"]=s+"-3";v[k+"-border"]=s+"-6";v[k+"-text"]=s+"-11"}
   const pv=$("pv");for(const k in v)pv.style.setProperty("--"+k,hx(v[k]));
   const cr=ratio(hx(v.primary),hx(v["primary-foreground"]));$("ratio").textContent=`chữ/nền ${cr.toFixed(1)}:1 `+(cr>=4.5?"✓ AA":"✗ không đạt AA");$("ratio").style.color=cr>=4.5?"":"#d33";
-  $("pvb").innerHTML=ST.map(([k,t])=>`<span class="badge" style="background:var(--${k}-subtle);color:var(--${k}-text);border-color:var(--${k}-border)">${t}</span>`).join("");
+  $("pvb").innerHTML=ST2.map(([k,,t])=>`<span class="badge" style="background:var(--${k}-subtle);color:var(--${k}-text);border-color:var(--${k}-border)">${t}</span>`).join("")
+    +sec.map(k=>`<button style="background:var(--${k});color:var(--${k}-foreground)">${k}</button>`).join("");
   $("pvc").innerHTML=o.chart.map((c,i)=>`<i style="background:${hx(c+"-9")};height:${30+((i*37)%70)}%"></i>`).join("");
 }
 $("mode").onclick=()=>{mode=mode=="light"?"dark":"light";render()};
@@ -101,5 +110,25 @@ $("step").innerHTML=[...Array(12)].map((_,i)=>`<option>${i+1}</option>`).join(""
 $("step").onchange=e=>{step=+e.target.value;render()};
 const rl=h=>{const f=c=>(c/=255)<=.03928?c/12.92:((c+.055)/1.055)**2.4;const[r,g,b]=[1,3,5].map(i=>f(parseInt(h.slice(i,i+2),16)));return .2126*r+.7152*g+.0722*b};
 const ratio=(a,b)=>{const[x,y]=[rl(a),rl(b)].sort((p,q)=>q-p);return(x+.05)/(y+.05)};
+const HEXRE=/^#[0-9a-f]{6}$/i;
+let hex="",harmony="";
+// Sinh lại thang brand / brand-2 / brand-3 trong trình duyệt bằng đúng bộ sinh của build.ts
+function applyCustom(){
+  for(const m of["light","dark"])for(const k of Object.keys(T.scales[m]))if(/^brand(-\d)?$/.test(k))delete T.scales[m][k];
+  const hasHex=HEXRE.test(hex);
+  if(!hasHex&&primary=="brand")primary="neutral";
+  const base=hasHex?hex:harmony&&primary!="neutral"?primary:null;
+  if(base){
+    const g=Gen.generate(base,harmony,{light:"#ffffff",dark:T.scales.dark.gray.steps[0]});
+    for(const m of["light","dark"])T.scales[m]={...g[m],...T.scales[m]};
+    if(hasHex)primary="brand";
+  }
+  render();
+}
+$("harm").innerHTML='<option value="">không</option>'+Gen.harmonies.map(h=>`<option>${h}</option>`).join("");
+$("harm").onchange=e=>{harmony=e.target.value;applyCustom()};
+$("hexc").oninput=e=>{hex=e.target.value;$("hex").value=hex;applyCustom()};
+$("hex").oninput=e=>{const v=e.target.value.trim(),h=v.startsWith("#")?v:"#"+v;
+  if(HEXRE.test(h)){hex=h.toLowerCase();$("hexc").value=hex;applyCustom()}else if(!v){hex="";applyCustom()}};
 render();
 </script>

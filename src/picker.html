@@ -1,0 +1,105 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Spectrum colors</title>
+<style>
+body{font:14px system-ui;margin:0;padding:24px;background:var(--bg);color:var(--fg)}
+body.light{--bg:#fff;--fg:#111;--bd:#0002}body.dark{--bg:#111;--fg:#eee;--bd:#fff3}
+header{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:16px}
+button{font:inherit;padding:4px 10px;border:1px solid var(--bd);background:none;color:inherit;border-radius:6px;cursor:pointer}
+button.on{outline:2px solid currentColor}
+code{padding:6px 10px;border:1px solid var(--bd);border-radius:6px}
+.row{display:flex;align-items:center;gap:8px;margin:4px 0}
+.name{width:70px;font-weight:600}
+.steps{display:grid;grid-template-columns:repeat(12,1fr);flex:1;gap:2px}
+.steps i{height:36px;border-radius:4px;cursor:pointer;display:flex;align-items:flex-end;justify-content:center;font:10px monospace;font-style:normal;opacity:.9}
+.steps i:hover{outline:2px solid currentColor}
+.tag button{padding:1px 6px;font-size:11px}
+#toast{position:fixed;bottom:16px;right:16px;padding:8px 12px;background:var(--fg);color:var(--bg);border-radius:6px;opacity:0;transition:.2s}
+#toast.show{opacity:1}
+#pv{background:var(--background);color:var(--foreground);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:24px;font-family:system-ui}
+#pv .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;align-items:start}
+#pv .card{background:var(--card);color:var(--card-foreground);border:1px solid var(--border);border-radius:10px;padding:16px;display:flex;flex-direction:column;gap:10px}
+#pv h3{margin:0;font-size:16px}#pv p{margin:0;color:var(--muted-foreground)}
+#pv .r{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+#pv button{border:1px solid transparent;border-radius:6px;padding:6px 12px}
+#pv .b-p{background:var(--primary);color:var(--primary-foreground)}
+#pv .b-s{background:var(--secondary);color:var(--secondary-foreground)}
+#pv .b-o{background:var(--background);color:var(--foreground);border-color:var(--input)}
+#pv .b-g{background:var(--accent);color:var(--accent-foreground)}
+#pv .b-d{background:var(--destructive);color:var(--destructive-foreground)}
+#pv input{background:var(--background);color:var(--foreground);border:1px solid var(--input);border-radius:6px;padding:6px 10px;font:inherit}
+#pv input:focus{outline:2px solid var(--ring);outline-offset:1px}
+#pv .badge{border-radius:99px;padding:2px 10px;font-size:12px;border:1px solid}
+#pv .muted{background:var(--muted);color:var(--muted-foreground);border-radius:6px;padding:8px}
+#pv .chart{display:flex;gap:4px;align-items:flex-end;height:60px}#pv .chart i{flex:1;border-radius:3px 3px 0 0}
+#pv .side{background:var(--sidebar);color:var(--sidebar-foreground);border:1px solid var(--sidebar-border);border-radius:10px;padding:8px;display:flex;flex-direction:column;gap:2px}
+#pv .side span{padding:6px 10px;border-radius:6px}
+#pv .side .act{background:var(--sidebar-accent);color:var(--sidebar-accent-foreground)}
+#pv .side .pri{background:var(--sidebar-primary);color:var(--sidebar-primary-foreground)}
+</style>
+<body class="light">
+<header>
+  <b>Spectrum colors</b>
+  <button id="mode">Light / Dark</button>
+  <button id="alpha">Alpha: off</button>
+  <span>neutral: <b id="n">gray</b></span><span>primary: <b id="p">neutral</b></span>
+  <label>bậc <select id="step"></select></label><span id="ratio"></span>
+  <code id="cmd"></code><button id="copycmd">Copy lệnh</button>
+</header>
+<section id="pv"><div class="grid">
+  <div class="card"><h3>Đăng nhập</h3><p>Nhập email để tiếp tục.</p>
+    <input placeholder="email@example.com"><div class="r"><button class="b-p">Primary</button><button class="b-s">Secondary</button><button class="b-o">Outline</button><button class="b-g">Ghost</button><button class="b-d">Xoá</button></div></div>
+  <div class="card"><h3>Trạng thái</h3><div class="r" id="pvb"></div><div class="muted">Vùng muted: văn bản phụ.</div></div>
+  <div class="card"><h3>Biểu đồ</h3><div class="chart" id="pvc"></div></div>
+  <div class="side"><span class="pri">Sidebar primary</span><span class="act">Mục đang chọn</span><span>Mục thường</span></div>
+</div></section>
+<main id="main"></main>
+<div id="toast"></div>
+<script>
+const T=/*TOKENS*/null;
+let mode="light",alpha=false,neutral=T.options.neutral,primary=T.options.primary,step=9;
+const $=id=>document.getElementById(id);
+const copy=t=>{navigator.clipboard.writeText(t);const e=$("toast");e.textContent="Đã copy "+t;e.classList.add("show");setTimeout(()=>e.classList.remove("show"),1200)};
+const lum=h=>{const[r,g,b]=[1,3,5].map(i=>parseInt(h.slice(i,i+2),16));return(r*299+g*587+b*114)/1000};
+function render(){
+  document.body.className=mode;$("n").textContent=neutral;$("p").textContent=primary;
+  $("cmd").textContent=`bun run build -- --neutral ${neutral} --primary ${primary}`+(primary!="neutral"&&step!=9?` --primary-step ${step}`:"");
+  $("main").innerHTML="";
+  for(const[name,s]of Object.entries(T.scales[mode])){
+    const row=document.createElement("div");row.className="row";
+    row.innerHTML=`<span class="name">${name}</span><span class="steps"></span><span class="tag"></span>`;
+    (alpha?s.alpha:s.steps).forEach((c,i)=>{
+      const el=document.createElement("i");el.style.background=c;el.textContent=i+1;
+      el.style.color=lum(c.slice(0,7))>140&&!(alpha&&mode=="dark")?"#000":"#fff";
+      el.title=`--${name}-${i+1}${alpha?"-a":""}  ${c}`;el.onclick=()=>copy(c);row.querySelector(".steps").append(el)});
+    const tag=row.querySelector(".tag"),b=document.createElement("button");
+    if(s.kind=="neutral"){b.textContent="neutral";b.className=name==neutral?"on":"";b.onclick=()=>{neutral=name;render()}}
+    else{b.textContent="primary";b.className=name==primary?"on":"";b.onclick=()=>{primary=name;render()}}
+    tag.append(b);$("main").append(row);
+  }
+  preview();
+}
+const ST=[["destructive","Lỗi"],["success","Thành công"],["warning","Cảnh báo"],["info","Thông tin"]];
+function preview(){
+  const o=T.options,N=neutral,P=primary=="neutral"?N:primary,np=primary=="neutral",dk=mode=="dark",S=T.scales[mode];
+  const hx=r=>{const i=r.lastIndexOf("-"),n=r.slice(0,i),k=r.slice(i+1);return k=="contrast"?S[n].contrast:S[n].steps[k-1]};
+  const v={background:N+"-1",foreground:N+"-12",card:dk?N+"-2":N+"-1","card-foreground":N+"-12",
+    primary:np?N+"-12":P+"-"+step,"primary-foreground":np?N+"-1":P+"-contrast",secondary:N+"-3","secondary-foreground":N+"-12",
+    muted:N+"-3","muted-foreground":N+"-11",accent:N+"-4","accent-foreground":N+"-12",border:N+"-6",input:N+"-7",ring:P+"-9",
+    sidebar:N+"-2","sidebar-foreground":N+"-12","sidebar-accent":N+"-4","sidebar-accent-foreground":N+"-12","sidebar-border":N+"-6"};
+  v["sidebar-primary"]=v.primary;v["sidebar-primary-foreground"]=v["primary-foreground"];
+  for(const[k]of ST){const s=o[k];v[k]=s+"-9";v[k+"-foreground"]=s+"-contrast";v[k+"-subtle"]=s+"-3";v[k+"-border"]=s+"-6";v[k+"-text"]=s+"-11"}
+  const pv=$("pv");for(const k in v)pv.style.setProperty("--"+k,hx(v[k]));
+  const cr=ratio(hx(v.primary),hx(v["primary-foreground"]));$("ratio").textContent=`chữ/nền ${cr.toFixed(1)}:1 `+(cr>=4.5?"✓ AA":"✗ không đạt AA");$("ratio").style.color=cr>=4.5?"":"#d33";
+  $("pvb").innerHTML=ST.map(([k,t])=>`<span class="badge" style="background:var(--${k}-subtle);color:var(--${k}-text);border-color:var(--${k}-border)">${t}</span>`).join("");
+  $("pvc").innerHTML=o.chart.map((c,i)=>`<i style="background:${hx(c+"-9")};height:${30+((i*37)%70)}%"></i>`).join("");
+}
+$("mode").onclick=()=>{mode=mode=="light"?"dark":"light";render()};
+$("alpha").onclick=e=>{alpha=!alpha;e.target.textContent="Alpha: "+(alpha?"on":"off");render()};
+$("copycmd").onclick=()=>copy($("cmd").textContent);
+$("step").innerHTML=[...Array(12)].map((_,i)=>`<option>${i+1}</option>`).join("");$("step").value=9;
+$("step").onchange=e=>{step=+e.target.value;render()};
+const rl=h=>{const f=c=>(c/=255)<=.03928?c/12.92:((c+.055)/1.055)**2.4;const[r,g,b]=[1,3,5].map(i=>f(parseInt(h.slice(i,i+2),16)));return .2126*r+.7152*g+.0722*b};
+const ratio=(a,b)=>{const[x,y]=[rl(a),rl(b)].sort((p,q)=>q-p);return(x+.05)/(y+.05)};
+render();
+</script>

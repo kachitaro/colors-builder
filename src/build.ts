@@ -11,6 +11,7 @@ const arg = (k: string, d: string) => {
 const OPT = {
   neutral: arg("neutral", "gray"),
   primary: arg("primary", "neutral"), // "neutral" = kiểu shadcn mặc định (đen/trắng)
+  primaryStep: arg("primary-step", "9"), // bậc dùng cho primary khi primary là một hue (1–12)
   destructive: arg("destructive", "red"),
   success: arg("success", "green"),
   warning: arg("warning", "amber"),
@@ -51,7 +52,7 @@ function semantic(mode: Mode): Map {
     "card-foreground": `${N}-12`,
     popover: dark ? `${N}-2` : `${N}-1`,
     "popover-foreground": `${N}-12`,
-    primary: neutralPrimary ? `${N}-12` : `${P}-9`,
+    primary: neutralPrimary ? `${N}-12` : `${P}-${OPT.primaryStep}`,
     "primary-foreground": neutralPrimary ? `${N}-1` : `${P}-contrast`,
     secondary: `${N}-3`,
     "secondary-foreground": `${N}-12`,
@@ -208,6 +209,8 @@ console.log(`audit: ${rows.length} cặp, ${fails.length} không đạt, ${infos
 for (const r of fails) console.log(`  FAIL ${r.mode} ${r.where} ${r.pair} ${r.ratio.toFixed(2)} < ${r.need}`);
 const close = chartDist.filter((c) => c.d < 0.08);
 for (const c of close) console.log(`  chart gần nhau: ${c.mode} ${c.a}/${c.b} ${c.d.toFixed(3)}`);
+
+await import("./picker.ts"); // sinh trang chọn màu từ tokens.json vừa ghi
 
 // CI: thoát với mã lỗi nếu có cặp chữ/UI không đạt
 if (fails.length) process.exitCode = 1;

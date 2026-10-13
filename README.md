@@ -63,11 +63,11 @@ Cặp neutral và hue đi cùng nhau: `slate` với `blue`/`indigo`, `mauve` v�
 
 ```bash
 bun install
-bun run build                                   # sinh dist/ + audit
+bun run build                                   # sinh dist/ + audit + index.html (trang chọn màu)
 bun run build -- --neutral sand --primary amber # theme cho một thương hiệu
 ```
 
-Các tuỳ chọn: `--neutral`, `--primary` (mặc định `neutral`, tức đen/trắng như shadcn), `--destructive`, `--success`, `--warning`, `--info`, `--chart a,b,c`, `--out`.
+Các tuỳ chọn: `--neutral`, `--primary` (tên hue hoặc mã hex như `"#2563eb"`; mặc định `neutral`, tức đen/trắng như shadcn), `--primary-step` (1–12), `--harmony complementary|split|analogous|triadic` (sinh màu phụ `brand-2`, `brand-3`), `--destructive`, `--success`, `--warning`, `--info`, `--chart a,b,c`, `--out`.
 
 Thêm hue mới bằng một dòng trong `src/config.ts`:
 
@@ -98,3 +98,7 @@ Có 434 cặp màu được kiểm tra, 0 cặp chữ hoặc UI không đạt. `
 - Cần màu trong suốt thì dùng bản `-a*`, không dùng `opacity`.
 - Chữ trên màu đặc luôn dùng `-contrast`.
 - Không phân biệt trạng thái chỉ bằng hue. Kèm icon hoặc chữ.
+
+## Trang chọn màu (GitHub Pages)
+
+`index.html` ở gốc repo là trang chọn màu tự chứa (không gọi mạng), sinh bởi `bun run build`. Luôn commit bản sinh từ build mặc định (không kèm `--primary`…). Bật Pages: Settings → Pages → Source `Deploy from a branch` → Branch `main`, thư mục `/ (root)` → Save.

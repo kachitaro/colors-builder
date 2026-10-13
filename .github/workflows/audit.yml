@@ -10,5 +10,5 @@ jobs:
       - run: bun run typecheck
       # build thất bại nếu có cặp tương phản không đạt
       - run: bun run build
-      # dist/ phải khớp với src/ (quên build lại → CI đỏ)
-      - run: git diff --exit-code dist/
+      # dist/ và index.html phải khớp với src/ (quên build lại → CI đỏ)
+      - run: git diff --exit-code dist/ index.html

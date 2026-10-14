@@ -37,7 +37,8 @@ import { useDesignSystemSearchParams } from "@/app/(app)/(create)/lib/search-par
 
 const PRESET_EXAMPLE = "b2D0wqNxT"
 const PRESET_TITLE = "Open Preset"
-const PRESET_DESCRIPTION = "Paste a preset code to load a saved configuration."
+const PRESET_DESCRIPTION =
+  "Paste a preset code or a share link to load a saved configuration."
 
 export function OpenPreset({
   className,
@@ -72,7 +73,7 @@ export function OpenPreset({
         return
       }
 
-      setParams({ preset: nextPreset })
+      setParams({ preset: nextPreset.preset, ...nextPreset.spectrum })
       handleOpenChange(false)
     },
     [handleOpenChange, nextPreset, setParams]

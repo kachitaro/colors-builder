@@ -4,6 +4,7 @@ import { Suspense } from "react"
 import { usePathname } from "next/navigation"
 
 import { Separator } from "@/registry/new-york-v4/ui/separator"
+import { ShareButton } from "@/app/(app)/(create)/components/share-button"
 import { ProjectForm } from "@/app/(app)/(create)/components/project-form"
 
 export function DesignerActions() {
@@ -20,6 +21,9 @@ export function DesignerActions() {
     <>
       <div className="hidden items-center gap-2 group-has-data-[slot=designer]/layout:md:flex">
         <Separator orientation="vertical" />
+        <Suspense fallback={null}>
+          <ShareButton />
+        </Suspense>
         <Suspense fallback={null}>
           <ProjectForm />
         </Suspense>

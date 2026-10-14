@@ -8,25 +8,16 @@ import { copyToClipboardWithMeta } from "@/components/copy-button"
 import { Button } from "@/styles/base-nova/ui/button"
 import { usePresetCode } from "@/app/(app)/(create)/hooks/use-design-system"
 import { useDesignSystemSearchParams } from "@/app/(app)/(create)/lib/search-params"
+import { buildShareUrl } from "@/app/(app)/(create)/lib/share-link"
+import {
+  fromSpectrumOptions,
+  toSpectrumOptions,
+} from "@/app/(app)/(create)/lib/spectrum-params"
 
 export function ShareButton() {
   const [params] = useDesignSystemSearchParams()
   const presetCode = usePresetCode()
   const [hasCopied, setHasCopied] = React.useState(false)
-
-  const shareUrl = React.useMemo(() => {
-    const origin = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"
-    const searchParams = new URLSearchParams({
-      preset: presetCode,
-      item: params.item,
-    })
-
-    if (params.pointer) {
-      searchParams.set("pointer", "true")
-    }
-
-    return `${origin}/create?${searchParams.toString()}`
-  }, [params.item, params.pointer, presetCode])
 
   React.useEffect(() => {
     if (hasCopied) {
@@ -36,6 +27,12 @@ export function ShareButton() {
   }, [hasCopied])
 
   const handleCopy = React.useCallback(() => {
+    const shareUrl = buildShareUrl(window.location.origin, {
+      preset: presetCode,
+      item: params.item,
+      pointer: params.pointer,
+      spectrum: fromSpectrumOptions(toSpectrumOptions(params)),
+    })
     copyToClipboardWithMeta(shareUrl, {
       name: "copy_create_share_url",
       properties: {
@@ -43,7 +40,7 @@ export function ShareButton() {
       },
     })
     setHasCopied(true)
-  }, [shareUrl])
+  }, [params, presetCode])
 
   return (
     <Button variant="outline" className="hidden md:flex" onClick={handleCopy}>

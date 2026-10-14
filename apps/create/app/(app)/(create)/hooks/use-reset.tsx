@@ -4,6 +4,7 @@ import * as React from "react"
 import useSWR from "swr"
 
 import { DEFAULT_CONFIG, PRESETS } from "@/registry/config"
+import { buildResetParams } from "@/app/(app)/(create)/lib/reset-params"
 import { useDesignSystemSearchParams } from "@/app/(app)/(create)/lib/search-params"
 
 const RESET_DIALOG_KEY = "create:reset-dialog-open"
@@ -25,22 +26,8 @@ export function useReset() {
         (preset) => preset.base === params.base && preset.style === params.style
       ) ?? DEFAULT_CONFIG
 
-    setParams({
-      base: params.base,
-      style: params.style,
-      baseColor: preset.baseColor,
-      theme: preset.theme,
-      chartColor: preset.chartColor,
-      iconLibrary: preset.iconLibrary,
-      font: preset.font,
-      fontHeading: preset.fontHeading,
-      menuAccent: preset.menuAccent,
-      menuColor: preset.menuColor,
-      radius: preset.radius,
-      template: DEFAULT_CONFIG.template,
-      item: params.item,
-    })
-  }, [setParams, params.base, params.style, params.item])
+    setParams(buildResetParams(params, preset))
+  }, [setParams, params])
 
   const handleShowResetDialogChange = React.useCallback(
     (open: boolean) => {

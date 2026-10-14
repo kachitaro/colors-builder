@@ -83,3 +83,10 @@ describe("spectrum URL params", () => {
     )
   })
 })
+
+describe("chart length", () => {
+  test("a long chart list is capped, not processed unbounded", () => {
+    const o = toSpectrumOptions(url({ chart: "blue,".repeat(60) }))
+    expect(o.chart.length).toBeLessThanOrEqual(DEFAULT_OPTIONS.chart.length)
+  })
+})

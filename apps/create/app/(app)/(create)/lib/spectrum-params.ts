@@ -62,7 +62,10 @@ function parsePrimary(raw: string) {
 // Never throws: any invalid value falls back to its default.
 export function toSpectrumOptions(p: SpectrumUrlParams): SpectrumOptions {
   const primary = parsePrimary(p.primary)
-  const chart = p.chart.split(",").filter((c) => Object.hasOwn(hueNames, c))
+  const chart = p.chart
+    .split(",")
+    .filter((c) => Object.hasOwn(hueNames, c))
+    .slice(0, D.chart.length) // bounds the cost of buildSpectrum for crafted links
   return {
     neutral: Object.hasOwn(neutralNames, p.neutral) ? p.neutral : D.neutral,
     primary,
@@ -94,4 +97,20 @@ export function fromSpectrumOptions(o: SpectrumOptions): SpectrumUrlParams {
     info: o.info,
     chart: o.chart.join(","),
   }
+}
+
+// Reads the Spectrum params from a URL query, normalized; missing = default.
+export function spectrumParamsFromSearch(
+  search: URLSearchParams
+): SpectrumUrlParams {
+  const raw: SpectrumUrlParams = { ...SPECTRUM_URL_DEFAULTS }
+
+  for (const key of Object.keys(raw) as (keyof SpectrumUrlParams)[]) {
+    const value = search.get(key)
+    if (value === null) continue
+    if (key === "step") raw.step = Number(value)
+    else raw[key] = value
+  }
+
+  return fromSpectrumOptions(toSpectrumOptions(raw))
 }

@@ -19,11 +19,11 @@ const WelcomeDialog = dynamic(() =>
 )
 
 export const metadata: Metadata = {
-  title: "Spectrum Create",
+  title: "Create",
   description:
     "Customize everything. Pick your component library, icons, fonts and a Spectrum color palette, with a contrast audit.",
   openGraph: {
-    title: "Spectrum Create",
+    title: "Create",
     description:
       "Customize everything. Pick your component library, icons, fonts and a Spectrum color palette, with a contrast audit.",
     type: "website",
@@ -39,7 +39,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Spectrum Create",
+    title: "Create",
     description:
       "Customize everything. Pick your component library, icons, fonts and a Spectrum color palette, with a contrast audit.",
     images: [siteConfig.ogImage],

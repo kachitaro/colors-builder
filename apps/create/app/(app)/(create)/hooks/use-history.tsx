@@ -5,6 +5,10 @@ import { Suspense } from "react"
 import { useSearchParams } from "next/navigation"
 
 import {
+  decodeHistoryEntry,
+  historyEntryFromSearch,
+} from "@/app/(app)/(create)/lib/history-entry"
+import {
   useDesignSystemSearchParams,
   type DesignSystemSearchParams,
 } from "@/app/(app)/(create)/lib/search-params"
@@ -29,13 +33,19 @@ function PresetSync({
   onPresetChange: (preset: string) => void
 }) {
   const searchParams = useSearchParams()
-  const preset = searchParams.get("preset") ?? ""
+  const entry = historyEntryFromSearch(searchParams)
 
   React.useEffect(() => {
-    onPresetChange(preset)
-  }, [preset, onPresetChange])
+    onPresetChange(entry)
+  }, [entry, onPresetChange])
 
   return null
+}
+
+// Preset + colors of an entry; a missing preset is cleared with null.
+function restoreParams(entry: string) {
+  const { preset, spectrum } = decodeHistoryEntry(entry)
+  return { preset: preset || null, ...spectrum }
 }
 
 export function HistoryProvider({ children }: { children: React.ReactNode }) {
@@ -98,7 +108,7 @@ export function HistoryProvider({ children }: { children: React.ReactNode }) {
     // wrapper's input type does not model.
     setParams(
       {
-        preset: entriesRef.current[nextIndex] || null,
+        ...restoreParams(entriesRef.current[nextIndex]),
       } as Partial<DesignSystemSearchParams>,
       { history: "replace" }
     )
@@ -119,7 +129,7 @@ export function HistoryProvider({ children }: { children: React.ReactNode }) {
     // wrapper's input type does not model.
     setParams(
       {
-        preset: entriesRef.current[nextIndex] || null,
+        ...restoreParams(entriesRef.current[nextIndex]),
       } as Partial<DesignSystemSearchParams>,
       { history: "replace" }
     )

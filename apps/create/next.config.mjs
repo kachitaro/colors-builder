@@ -19,6 +19,7 @@ const nextConfig = {
   outputFileTracingIncludes: {
     "/*": ["./registry/**/*", "./styles/**/*"],
   },
+  transpilePackages: ["spectrum-colors"],
   turbopack: {
     root: path.resolve(import.meta.dirname, "../.."),
   },

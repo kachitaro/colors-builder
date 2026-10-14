@@ -7,6 +7,7 @@ import { contrast, fmt, hueScale, neutralScale, type Mode, type Scale } from "./
 // độ phân biệt giữa các màu chart (ΔE OKLab)
 const dE = differenceEuclidean("oklab");
 const CHART_MIN_DE = 0.08;
+export { HARMONY, HUES, NEUTRALS };
 const MODES: Mode[] = ["light", "dark"];
 
 export type SpectrumOptions = {

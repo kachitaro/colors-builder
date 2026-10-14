@@ -11,4 +11,4 @@ jobs:
       # build thất bại nếu có cặp tương phản không đạt
       - run: bun run build
       # dist/ và index.html phải khớp với src/ (quên build lại → CI đỏ)
-      - run: git diff --exit-code dist/ index.html
+      - run: git diff --exit-code packages/spectrum/dist packages/spectrum/index.html

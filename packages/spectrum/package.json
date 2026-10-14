@@ -7,11 +7,13 @@
   "exports": {
     "./colors.css": "./dist/colors.css",
     "./theme.css": "./dist/theme.css",
-    "./tokens.json": "./dist/tokens.json"
+    "./tokens.json": "./dist/tokens.json",
+    "./core": "./src/core.ts"
   },
   "scripts": {
     "build": "bun src/build.ts",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "bun test"
   },
   "keywords": ["colors", "oklch", "radix", "shadcn", "tailwind", "design-tokens"],
   "dependencies": {},

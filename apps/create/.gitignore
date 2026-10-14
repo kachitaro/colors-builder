@@ -1,0 +1,7 @@
+/.next/
+/styles/*
+!/styles/README.md
+/public/r/styles/*
+.source
+*.tsbuildinfo
+next-env.d.ts

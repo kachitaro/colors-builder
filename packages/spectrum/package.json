@@ -1,0 +1,27 @@
+{
+  "name": "spectrum-colors",
+  "version": "0.1.0",
+  "description": "Thang màu 12 bậc kiểu Radix + token ngữ nghĩa kiểu shadcn, sinh bằng OKLCH và kiểm tra tương phản WCAG.",
+  "type": "module",
+  "files": ["dist"],
+  "exports": {
+    "./colors.css": "./dist/colors.css",
+    "./theme.css": "./dist/theme.css",
+    "./tokens.json": "./dist/tokens.json",
+    "./core": "./src/core.ts"
+  },
+  "scripts": {
+    "build": "bun src/build.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "bun test"
+  },
+  "keywords": ["colors", "oklch", "radix", "shadcn", "tailwind", "design-tokens"],
+  "dependencies": {},
+  "devDependencies": {
+    "@types/culori": "^4.0.1",
+    "@types/bun": "latest",
+    "@types/node": "^22.10.0",
+    "culori": "^4.0.2",
+    "typescript": "^5.7.0"
+  }
+}

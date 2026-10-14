@@ -7,8 +7,22 @@ jobs:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2
       - run: bun install --frozen-lockfile
-      - run: bun run typecheck
+      - run: bun run --filter spectrum-colors typecheck
+      - run: bun run --filter spectrum-colors test
+      - run: bun test "apps/create/app/(app)/(create)/lib"
       # build thất bại nếu có cặp tương phản không đạt
       - run: bun run build
-      # dist/ và index.html phải khớp với src/ (quên build lại → CI đỏ)
-      - run: git diff --exit-code dist/ index.html
+      # dist/ phải khớp với src/ (quên build lại → CI đỏ)
+      - run: git diff --exit-code packages/spectrum/dist
+  app:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+      - run: bun install --frozen-lockfile
+      # styles/ is generated (gitignored); the static export is what GitHub Pages serves
+      - run: bun run --filter create registry:build
+      - run: bun run --filter create build
+        env:
+          STATIC_EXPORT: "1"
+          NEXT_PUBLIC_BASE_PATH: /colors-builder

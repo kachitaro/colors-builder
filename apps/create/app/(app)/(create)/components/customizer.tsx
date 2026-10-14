@@ -5,7 +5,7 @@ import dynamic from "next/dynamic"
 import { type RegistryItem } from "shadcn/schema"
 
 import { useIsMobile } from "@/hooks/use-mobile"
-import { getThemesForBaseColor, STYLES } from "@/registry/config"
+import { STYLES } from "@/registry/config"
 import { Button } from "@/styles/base-nova/ui/button"
 import {
   Card,
@@ -16,9 +16,7 @@ import {
 import { FieldGroup, FieldSeparator } from "@/styles/base-nova/ui/field"
 import { MenuAccentPicker } from "@/app/(app)/(create)/components/accent-picker"
 import { ActionMenu } from "@/app/(app)/(create)/components/action-menu"
-import { BaseColorPicker } from "@/app/(app)/(create)/components/base-color-picker"
 import { BasePicker } from "@/app/(app)/(create)/components/base-picker"
-import { ChartColorPicker } from "@/app/(app)/(create)/components/chart-color-picker"
 import { CopyPreset } from "@/app/(app)/(create)/components/copy-preset"
 import { FontPicker } from "@/app/(app)/(create)/components/font-picker"
 import { IconLibraryPicker } from "@/app/(app)/(create)/components/icon-library-picker"
@@ -28,10 +26,9 @@ import { OpenPreset } from "@/app/(app)/(create)/components/open-preset"
 import { RadiusPicker } from "@/app/(app)/(create)/components/radius-picker"
 import { RandomButton } from "@/app/(app)/(create)/components/random-button"
 import { ResetDialog } from "@/app/(app)/(create)/components/reset-button"
+import { SpectrumPicker } from "@/app/(app)/(create)/components/spectrum-picker"
 import { StylePicker } from "@/app/(app)/(create)/components/style-picker"
-import { ThemePicker } from "@/app/(app)/(create)/components/theme-picker"
 import { FONT_HEADING_OPTIONS, FONTS } from "@/app/(app)/(create)/lib/fonts"
-import { useDesignSystemSearchParams } from "@/app/(app)/(create)/lib/search-params"
 
 // Only visible when user clicks "Create Project". Rendered client-only to
 // avoid a useId hydration mismatch on the Base UI dialog trigger. The loading
@@ -56,14 +53,8 @@ export function Customizer({
 }: {
   itemsByBase: Record<string, Pick<RegistryItem, "name" | "title" | "type">[]>
 }) {
-  const [params] = useDesignSystemSearchParams()
   const isMobile = useIsMobile()
   const anchorRef = React.useRef<HTMLDivElement | null>(null)
-
-  const availableThemes = React.useMemo(
-    () => getThemesForBaseColor(params.baseColor),
-    [params.baseColor]
-  )
 
   return (
     <Card
@@ -82,13 +73,7 @@ export function Customizer({
             anchorRef={anchorRef}
           />
           <FieldSeparator className="hidden md:block" />
-          <BaseColorPicker isMobile={isMobile} anchorRef={anchorRef} />
-          <ThemePicker
-            themes={availableThemes}
-            isMobile={isMobile}
-            anchorRef={anchorRef}
-          />
-          <ChartColorPicker isMobile={isMobile} anchorRef={anchorRef} />
+          <SpectrumPicker isMobile={isMobile} anchorRef={anchorRef} />
           <FieldSeparator className="hidden md:block" />
           <FontPicker
             label="Heading"

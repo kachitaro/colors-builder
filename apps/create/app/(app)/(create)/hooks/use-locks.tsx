@@ -4,9 +4,7 @@ import * as React from "react"
 
 export type LockableParam =
   | "style"
-  | "baseColor"
-  | "theme"
-  | "chartColor"
+  | "spectrum"
   | "iconLibrary"
   | "font"
   | "fontHeading"

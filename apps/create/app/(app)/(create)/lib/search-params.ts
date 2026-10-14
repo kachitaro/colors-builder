@@ -17,7 +17,6 @@ import {
   BASE_COLORS,
   BASES,
   DEFAULT_CONFIG,
-  getThemesForBaseColor,
   iconLibraries,
   MENU_ACCENTS,
   MENU_COLORS,
@@ -184,20 +183,13 @@ function normalizeDesignSystemParams(
     fontHeading: normalizeFontHeading(params.font, params.fontHeading),
   }
 
-  // Validate theme and chartColor against baseColor.
-  if (result.baseColor) {
-    const available = getThemesForBaseColor(result.baseColor)
-    const themeValid = available.some((t) => t.name === result.theme)
-    const chartColorValid = available.some((t) => t.name === result.chartColor)
-
-    if (!themeValid || !chartColorValid) {
-      const fallback = (available[0]?.name ?? result.baseColor) as ThemeName
-      result = {
-        ...result,
-        ...(!themeValid && { theme: fallback }),
-        ...(!chartColorValid && { chartColor: fallback as ChartColorName }),
-      }
-    }
+  // Colors come from Spectrum; shadcn base color / theme / chart color stay
+  // pinned (the preset code still needs valid values).
+  result = {
+    ...result,
+    baseColor: DEFAULT_CONFIG.baseColor,
+    theme: DEFAULT_CONFIG.theme,
+    chartColor: DEFAULT_CONFIG.chartColor ?? "neutral",
   }
 
   if (
@@ -218,7 +210,7 @@ function normalizeDesignSystemParams(
 // theme that base-color themes originally borrowed charts from.
 type SearchParamsLike = Pick<URLSearchParams, "get" | "has">
 
-function resolvePresetParams(
+export function resolvePresetParams(
   rawParams: DesignSystemSearchParams,
   searchParams: SearchParamsLike
 ) {
@@ -237,7 +229,15 @@ function resolvePresetParams(
         pointer: rawParams.pointer,
         size: rawParams.size,
         custom: rawParams.custom,
-        ...Object.fromEntries(SPECTRUM_KEYS.map((k) => [k, rawParams[k]])),
+        neutral: rawParams.neutral,
+        primary: rawParams.primary,
+        step: rawParams.step,
+        harmony: rawParams.harmony,
+        destructive: rawParams.destructive,
+        success: rawParams.success,
+        warning: rawParams.warning,
+        info: rawParams.info,
+        chart: rawParams.chart,
       })
     }
   }

@@ -39,6 +39,7 @@ import {
 import { FONTS } from "@/app/(app)/(create)/lib/fonts"
 import { getPresetCode } from "@/app/(app)/(create)/lib/preset-code"
 import { resolvePresetOverrides } from "@/app/(app)/(create)/lib/preset-query"
+import { spectrumParsers } from "@/app/(app)/(create)/lib/spectrum-params"
 
 const designSystemSearchParams = {
   preset: parseAsString.withDefault("b0"),
@@ -94,6 +95,7 @@ const designSystemSearchParams = {
   pointer: parseAsBoolean.withDefault(false),
   size: parseAsInteger.withDefault(100),
   custom: parseAsBoolean.withDefault(false),
+  ...spectrumParsers,
 }
 
 // Design system param keys that get encoded into the preset code.
@@ -119,6 +121,8 @@ function normalizeFontHeading(
   return fontHeading === font ? "inherit" : fontHeading
 }
 
+const SPECTRUM_KEYS = Object.keys(spectrumParsers) as (keyof typeof spectrumParsers)[]
+
 // Non-design-system keys that get passed through as-is.
 // `base` is not encoded in preset codes — it's an architectural choice, not visual.
 const NON_DESIGN_SYSTEM_KEYS = [
@@ -130,6 +134,7 @@ const NON_DESIGN_SYSTEM_KEYS = [
   "pointer",
   "size",
   "custom",
+  ...SPECTRUM_KEYS,
 ] as const
 
 // Shared across hook instances so only one mount effect encodes the initial URL.
@@ -232,6 +237,7 @@ function resolvePresetParams(
         pointer: rawParams.pointer,
         size: rawParams.size,
         custom: rawParams.custom,
+        ...Object.fromEntries(SPECTRUM_KEYS.map((k) => [k, rawParams[k]])),
       })
     }
   }

@@ -9,6 +9,8 @@ import {
   type DesignSystemConfig,
 } from "@/registry/config"
 import { useIframeMessageListener } from "@/app/(app)/(create)/hooks/use-iframe-sync"
+import { spectrumThemeCss } from "@/app/(app)/(create)/lib/spectrum-css"
+import { toSpectrumOptions } from "@/app/(app)/(create)/lib/spectrum-params"
 import { FONTS } from "@/app/(app)/(create)/lib/fonts"
 import {
   useDesignSystemSearchParams,
@@ -85,6 +87,15 @@ export function DesignSystemProvider({
     menuColor,
     pointer,
     radius,
+    neutral,
+    primary,
+    step,
+    harmony,
+    destructive,
+    success,
+    warning,
+    info,
+    chart,
   } = searchParams
   const effectiveRadius = style === "lyra" ? "none" : radius
   const selectedFont = React.useMemo(
@@ -208,6 +219,15 @@ export function DesignSystemProvider({
     return buildRegistryTheme(config)
   }, [baseColor, theme, chartColor, menuAccent, effectiveRadius])
 
+  // Spectrum colors layer over the shadcn base theme (later rules win).
+  const spectrumCss = React.useMemo(
+    () =>
+      spectrumThemeCss(
+        toSpectrumOptions({ neutral, primary, step, harmony, destructive, success, warning, info, chart })
+      ).css,
+    [neutral, primary, step, harmony, destructive, success, warning, info, chart]
+  )
+
   // Use useLayoutEffect for synchronous CSS var updates.
   React.useLayoutEffect(() => {
     if (!registryTheme || !registryTheme.cssVars) {
@@ -224,8 +244,11 @@ export function DesignSystemProvider({
       document.head.appendChild(styleElement)
     }
 
-    styleElement.textContent = buildThemeCssText(registryTheme.cssVars, pointer)
-  }, [registryTheme, pointer])
+    styleElement.textContent = [
+      buildThemeCssText(registryTheme.cssVars, pointer),
+      spectrumCss,
+    ].join("\n")
+  }, [registryTheme, pointer, spectrumCss])
 
   // Handle menu color inversion by adding/removing dark class to elements with cn-menu-target.
   // useLayoutEffect to apply classes synchronously before paint, avoiding flash.

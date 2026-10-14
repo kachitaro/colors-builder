@@ -4,6 +4,7 @@ import { Suspense } from "react"
 import { usePathname } from "next/navigation"
 
 import { Separator } from "@/registry/new-york-v4/ui/separator"
+import { ExportCss } from "@/app/(app)/(create)/components/export-css"
 import { ShareButton } from "@/app/(app)/(create)/components/share-button"
 import { ProjectForm } from "@/app/(app)/(create)/components/project-form"
 
@@ -23,6 +24,9 @@ export function DesignerActions() {
         <Separator orientation="vertical" />
         <Suspense fallback={null}>
           <ShareButton />
+        </Suspense>
+        <Suspense fallback={null}>
+          <ExportCss />
         </Suspense>
         <Suspense fallback={null}>
           <ProjectForm />

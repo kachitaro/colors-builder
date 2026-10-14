@@ -3,6 +3,7 @@
 import * as React from "react"
 import { HARMONY, HUES, NEUTRALS } from "spectrum-colors/core"
 
+import { AuditPanel } from "@/app/(app)/(create)/components/audit-panel"
 import { LockButton } from "@/app/(app)/(create)/components/lock-button"
 import {
   Picker,
@@ -295,6 +296,7 @@ export function SpectrumPicker(props: PickerProps) {
         ]}
       />
       <PickerSeparator />
+      <AuditPanel />
       <details className="group/adv rounded-md text-left">
         <summary className="cursor-pointer text-xs text-muted-foreground select-none">
           Status &amp; chart colors

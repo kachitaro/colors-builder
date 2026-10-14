@@ -14,16 +14,18 @@ import { DarkModeScript } from "@/app/(app)/(create)/components/mode-switcher"
 import { OpenPresetScript } from "@/app/(app)/(create)/components/open-preset"
 import { PreviewStyle } from "@/app/(app)/(create)/components/preview-style"
 import { RandomizeScript } from "@/app/(app)/(create)/components/random-button"
-import { getBaseComponent, getBaseItem } from "@/app/(app)/(create)/lib/api"
+import {
+  getBaseComponent,
+  getBaseItem,
+  getItemsForBase,
+} from "@/app/(app)/(create)/lib/api"
 
 import "@/app/style-registry.css"
 import "streamdown/styles.css"
 
 export const revalidate = false
 export const dynamic = "force-static"
-export const dynamicParams = true
-
-const STATIC_PREVIEW_ITEMS = ["preview", "preview-02"] as const
+export const dynamicParams = false
 
 function PreventScrollOnFocusScript() {
   return (
@@ -97,13 +99,18 @@ export async function generateMetadata({
   }
 }
 
+// Every item the item picker can open (also required by `output: export`).
 export async function generateStaticParams() {
-  return BASES.flatMap((base) =>
-    STATIC_PREVIEW_ITEMS.map((name) => ({
-      base: base.name,
-      name,
-    }))
-  )
+  return (
+    await Promise.all(
+      BASES.map(async (base) =>
+        (await getItemsForBase(base.name as Base["name"])).map((item) => ({
+          base: base.name,
+          name: item.name,
+        }))
+      )
+    )
+  ).flat()
 }
 
 export default async function BlockPage({

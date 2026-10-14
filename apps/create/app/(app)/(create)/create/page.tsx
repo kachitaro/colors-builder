@@ -19,13 +19,13 @@ const WelcomeDialog = dynamic(() =>
 )
 
 export const metadata: Metadata = {
-  title: "New Project",
+  title: "Spectrum Create",
   description:
-    "Customize everything. Pick your component library, icons, base color, theme, fonts and create your own version of shadcn/ui.",
+    "Customize everything. Pick your component library, icons, fonts and a Spectrum color palette, with a contrast audit.",
   openGraph: {
-    title: "New Project",
+    title: "Spectrum Create",
     description:
-      "Customize everything. Pick your component library, icons, base color, theme, fonts and create your own version of shadcn/ui.",
+      "Customize everything. Pick your component library, icons, fonts and a Spectrum color palette, with a contrast audit.",
     type: "website",
     url: absoluteUrl("/create"),
     images: [
@@ -39,9 +39,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "New Project",
+    title: "Spectrum Create",
     description:
-      "Customize everything. Pick your component library, icons, base color, theme, fonts and create your own version of shadcn/ui.",
+      "Customize everything. Pick your component library, icons, fonts and a Spectrum color palette, with a contrast audit.",
     images: [siteConfig.ogImage],
     creator: "@shadcn",
   },

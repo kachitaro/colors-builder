@@ -20,6 +20,9 @@ import {
   useDesignSystemSearchParams,
 } from "@/app/(app)/(create)/lib/search-params"
 
+// Set only for the static GitHub Pages build (see next.config.mjs).
+const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH ?? ""
+
 // Hoisted — avoids recreating on every message event. (js-hoist-regexp)
 const MAC_REGEX = /Mac|iPhone|iPad|iPod/
 
@@ -172,7 +175,7 @@ export function Preview() {
     // Further updates of the search params will be sent to the iframe
     // via a postMessage channel, for it to sync its own history onto the host's.
     return serializeDesignSystemSearchParams(
-      `/preview/${params.base}/${params.item}`,
+      `${BASE_PATH}/preview/${params.base}/${params.item}`,
       params
     )
     // eslint-disable-next-line react-hooks/exhaustive-deps

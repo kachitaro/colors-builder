@@ -5,7 +5,6 @@ import { NuqsAdapter } from "nuqs/adapters/next/app"
 import { META_THEME_COLORS, siteConfig } from "@/lib/config"
 import { fontVariables } from "@/lib/fonts"
 import { ActiveThemeProvider } from "@/components/active-theme"
-import { Analytics } from "@/components/analytics"
 import { TailwindIndicator } from "@/components/tailwind-indicator"
 import { ThemeProvider } from "@/components/theme-provider"
 import { TooltipProvider as BaseTooltipProvider } from "@/registry/bases/base/ui/tooltip"
@@ -112,7 +111,6 @@ export default function RootLayout({
               </BaseTooltipProvider>
             </NuqsAdapter>
             <TailwindIndicator />
-            <Analytics />
           </ActiveThemeProvider>
         </ThemeProvider>
       </body>

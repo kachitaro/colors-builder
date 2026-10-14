@@ -9,3 +9,8 @@ Generated, gitignored: `styles/*` (run `bun run registry:build` or `bun ./script
 
 Dev: `bunx next dev --webpack --port 4000`. Turbopack cannot resolve `next/font/google` here ("Can't resolve @vercel/turbopack-next/internal/font/google/font").
 Removed also: v0 integration (v0.ts, init/v0 route, v0-button, open-in-v0, block-viewer, chart-code-viewer).
+Removed also: typeset (app + preview + /typeset.css route), /init + /init/md routes (shadcn init endpoint; static export cannot host them).
+Removed also: ProjectForm ('Get Code' dialog emitting shadcn init commands), lib/templates, lib/build-instructions — commands cannot carry Spectrum colors (user: no shadcn init).
+Removed also: app/robots.ts (not static-export compatible).
+Removed also: dead docs cluster (lib/llm,changelog,page-tree,docs; docs-sidebar, docs-base-switcher, chart-toolbar, block-display, components-list, announcement, chart-display; scripts/build-icons) so apps/create typechecks clean.
+Removed also: lib/registry-health, monitor/validate/capture scripts, hooks/use-search-registry, components/directory-list, registry/calendar.test.ts (needed public/r; unrelated upstream test).

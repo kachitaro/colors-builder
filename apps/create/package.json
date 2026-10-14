@@ -5,10 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "next dev --webpack --port 4000",
-    "build": "bun run registry:build && next build",
+    "build": "bun run registry:build && next build --webpack",
     "start": "next start --port 4000",
-    "registry:build": "bun ./scripts/build-registry.mts",
-    "icons:build": "tsx --tsconfig ./tsconfig.scripts.json ./scripts/build-icons.ts",
+    "registry:build": "bun ./scripts/build-registry.mts --style all",
     "typecheck": "tsc --noEmit",
     "test": "bun test"
   },

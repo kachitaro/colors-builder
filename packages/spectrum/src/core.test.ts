@@ -17,7 +17,7 @@ test("mặc định trùng từng byte với dist/ đã commit", () => {
 test("sand + #2563eb + triadic trùng từng byte với CLI", () => {
   const out = mkdtempSync(join(tmpdir(), "spectrum-"));
   const cli = Bun.spawnSync(
-    ["bun", "src/build.ts", "--neutral", "sand", "--primary", "#2563eb", "--harmony", "triadic", "--out", out, "--page", join(out, "p.html")],
+    ["bun", "src/build.ts", "--neutral", "sand", "--primary", "#2563eb", "--harmony", "triadic", "--out", out],
     { cwd: new URL("..", import.meta.url).pathname },
   );
   expect(cli.exitCode).toBe(0);

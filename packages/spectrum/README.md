@@ -63,7 +63,7 @@ Cặp neutral và hue đi cùng nhau: `slate` với `blue`/`indigo`, `mauve` v�
 
 ```bash
 bun install
-bun run build                                   # sinh dist/ + audit + index.html (trang chọn màu)
+bun run build                                   # sinh dist/ + audit
 bun run build -- --neutral sand --primary amber # theme cho một thương hiệu
 ```
 
@@ -82,7 +82,8 @@ Build sẽ **thất bại** nếu có cặp chữ hoặc UI không đạt chuẩ
 ```
 src/config.ts   hue nguồn, đường cong, ngưỡng
 src/scale.ts    toán màu: sinh thang, giải tương phản, alpha
-src/build.ts    ánh xạ token, audit, xuất file
+src/core.ts     buildSpectrum(): ánh xạ token, audit, sinh CSS (thuần, chạy được trong trình duyệt)
+src/build.ts    CLI mỏng: đọc tham số, ghi file
 dist/           colors.css · theme.css · tokens.json · audit.md (commit sẵn)
 ```
 
@@ -99,6 +100,6 @@ Có 434 cặp màu được kiểm tra, 0 cặp chữ hoặc UI không đạt. `
 - Chữ trên màu đặc luôn dùng `-contrast`.
 - Không phân biệt trạng thái chỉ bằng hue. Kèm icon hoặc chữ.
 
-## Trang chọn màu (GitHub Pages)
+## Trang tạo theme
 
-`index.html` ở gốc repo là trang chọn màu tự chứa (không gọi mạng), sinh bởi `bun run build`. Luôn commit bản sinh từ build mặc định (không kèm `--primary`…). Bật Pages: Settings → Pages → Source `Deploy from a branch` → Branch `main`, thư mục `/ (root)` → Save.
+App `apps/create` (fork từ `/create` của shadcn) dùng chính lõi `spectrum-colors/core` để sinh màu ngay trong trình duyệt. Xem README ở gốc repo.

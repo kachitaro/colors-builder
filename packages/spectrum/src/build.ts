@@ -34,8 +34,5 @@ console.log(`audit: ${rows.length} cặp, ${fails.length} không đạt, ${infos
 for (const f of fails) console.log(`  FAIL ${f.mode} ${f.where} ${f.pair} ${f.ratio.toFixed(2)} < ${f.need}`);
 for (const c of closeChart) console.log(`  chart gần nhau: ${c.mode} ${c.a}/${c.b} ${c.d.toFixed(3)}`);
 
-// import động có chủ đích: picker.ts đọc tokens.json, nên phải chạy SAU khi ghi file ở trên.
-await import("./picker.ts");
-
 // CI: thoát với mã lỗi nếu có cặp chữ/UI không đạt
 if (fails.length) process.exitCode = 1;

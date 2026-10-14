@@ -1,23 +1,12 @@
 "use client"
 
 import { Suspense } from "react"
-import { usePathname } from "next/navigation"
 
 import { Separator } from "@/registry/new-york-v4/ui/separator"
 import { ExportCss } from "@/app/(app)/(create)/components/export-css"
 import { ShareButton } from "@/app/(app)/(create)/components/share-button"
-import { ProjectForm } from "@/app/(app)/(create)/components/project-form"
 
 export function DesignerActions() {
-  const pathname = usePathname()
-
-  // Typeset carries its own docs panel; the header stays clean. A route gate
-  // on purpose: two designer pages don't justify a slot protocol. Revisit if
-  // a third appears.
-  if (pathname === "/typeset") {
-    return null
-  }
-
   return (
     <>
       <div className="hidden items-center gap-2 group-has-data-[slot=designer]/layout:md:flex">
@@ -27,9 +16,6 @@ export function DesignerActions() {
         </Suspense>
         <Suspense fallback={null}>
           <ExportCss />
-        </Suspense>
-        <Suspense fallback={null}>
-          <ProjectForm />
         </Suspense>
       </div>
     </>

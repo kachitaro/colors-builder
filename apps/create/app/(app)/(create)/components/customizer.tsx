@@ -1,12 +1,10 @@
 "use client"
 
 import * as React from "react"
-import dynamic from "next/dynamic"
 import { type RegistryItem } from "shadcn/schema"
 
 import { useIsMobile } from "@/hooks/use-mobile"
 import { STYLES } from "@/registry/config"
-import { Button } from "@/styles/base-nova/ui/button"
 import {
   Card,
   CardContent,
@@ -29,24 +27,6 @@ import { ResetDialog } from "@/app/(app)/(create)/components/reset-button"
 import { SpectrumPicker } from "@/app/(app)/(create)/components/spectrum-picker"
 import { StylePicker } from "@/app/(app)/(create)/components/style-picker"
 import { FONT_HEADING_OPTIONS, FONTS } from "@/app/(app)/(create)/lib/fonts"
-
-// Only visible when user clicks "Create Project". Rendered client-only to
-// avoid a useId hydration mismatch on the Base UI dialog trigger. The loading
-// placeholder mirrors the trigger button exactly so there is no layout shift.
-const ProjectForm = dynamic(
-  () =>
-    import("@/app/(app)/(create)/components/project-form").then(
-      (m) => m.ProjectForm
-    ),
-  {
-    ssr: false,
-    loading: () => (
-      <Button disabled aria-hidden>
-        Get Code
-      </Button>
-    ),
-  }
-)
 
 export function Customizer({
   itemsByBase,
@@ -107,9 +87,6 @@ export function Customizer({
         <RandomButton className="max-w-20 min-w-0 flex-1 sm:max-w-none md:flex-none" />
         <ActionMenu itemsByBase={itemsByBase} />
         <ResetDialog />
-      </CardFooter>
-      <CardFooter className="-mt-3 hidden min-w-0 gap-2 md:flex md:flex-col md:**:[button,a]:w-full">
-        <ProjectForm />
       </CardFooter>
     </Card>
   )

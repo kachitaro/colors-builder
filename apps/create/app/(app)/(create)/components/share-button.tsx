@@ -27,12 +27,15 @@ export function ShareButton() {
   }, [hasCopied])
 
   const handleCopy = React.useCallback(() => {
-    const shareUrl = buildShareUrl(window.location.origin, {
-      preset: presetCode,
-      item: params.item,
-      pointer: params.pointer,
-      spectrum: fromSpectrumOptions(toSpectrumOptions(params)),
-    })
+    const shareUrl = buildShareUrl(
+      window.location.origin + (process.env.NEXT_PUBLIC_BASE_PATH ?? ""),
+      {
+        preset: presetCode,
+        item: params.item,
+        pointer: params.pointer,
+        spectrum: fromSpectrumOptions(toSpectrumOptions(params)),
+      }
+    )
     copyToClipboardWithMeta(shareUrl, {
       name: "copy_create_share_url",
       properties: {
